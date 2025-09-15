@@ -1,0 +1,106 @@
+{
+  "name": "react-native-udp-ios",
+  "version": "1.0.0",
+  "description": "High-performance UDP socket module for React Native with zero-copy buffer support",
+  "main": "lib/commonjs/index",
+  "module": "lib/module/index",
+  "types": "lib/typescript/index.d.ts",
+  "react-native": "src/index",
+  "source": "src/index",
+  "files": [
+    "src",
+    "lib",
+    "ios",
+    "android",
+    "cpp",
+    "react-native-udp-direct.podspec",
+    "!**/__tests__",
+    "!**/__fixtures__",
+    "!**/__mocks__",
+    "!**/.*"
+  ],
+  "scripts": {
+    "test": "jest",
+    "typecheck": "tsc --noEmit",
+    "build": "bob build",
+    "release": "release-it",
+    "prepare": "bob build"
+  },
+  "keywords": [
+    "react-native",
+    "ios",
+    "udp",
+    "socket",
+    "networking",
+    "zero-copy",
+    "turbomodule",
+    "hot-reload-safe",
+    "jsi"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/react-native-udp-ios.git"
+  },
+  "author": "Juergen Geck",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yourusername/react-native-udp-ios/issues"
+  },
+  "homepage": "https://github.com/yourusername/react-native-udp-ios#readme",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
+  "devDependencies": {
+    "@commitlint/config-conventional": "^18.0.0",
+    "@react-native/eslint-config": "^0.74.0",
+    "@release-it/conventional-changelog": "^8.0.0",
+    "@types/jest": "^29.5.0",
+    "@types/react": "^19.0.0",
+    "commitlint": "^18.0.0",
+    "del-cli": "^5.1.0",
+    "eslint": "^8.51.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "jest": "^29.7.0",
+    "pod-install": "^0.2.0",
+    "prettier": "^3.0.3",
+    "react": "19.0.0",
+    "react-native": "0.79.2",
+    "react-native-builder-bob": "^0.40.0",
+    "release-it": "^17.0.0",
+    "typescript": "^5.2.2"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-native": ">=0.73.0"
+  },
+  "workspaces": [
+    "example"
+  ],
+  "packageManager": "npm@10.9.0",
+  "engines": {
+    "node": ">=18"
+  },
+  "codegenConfig": {
+    "name": "UDPDirectModuleSpec",
+    "type": "modules",
+    "jsSrcsDir": "src",
+    "android": {
+      "javaPackageName": "com.lama.udpdirect"
+    }
+  },
+  "react-native-builder-bob": {
+    "source": "src",
+    "output": "lib",
+    "targets": [
+      "commonjs",
+      "module",
+      [
+        "typescript",
+        {
+          "project": "tsconfig.build.json"
+        }
+      ]
+    ]
+  }
+}
