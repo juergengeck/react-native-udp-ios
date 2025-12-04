@@ -113,7 +113,8 @@ export class UDPSocketJSI {
       udpSendDirect(this.socketId, data, 0, data.byteLength, port, address);
     } else {
       // Send Uint8Array with proper offset and length
-      udpSendDirect(this.socketId, data.buffer, data.byteOffset, data.byteLength, port, address);
+      // Cast to ArrayBuffer since SharedArrayBuffer is not expected in this context
+      udpSendDirect(this.socketId, data.buffer as ArrayBuffer, data.byteOffset, data.byteLength, port, address);
     }
   }
 
