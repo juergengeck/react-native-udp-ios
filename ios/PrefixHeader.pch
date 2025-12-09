@@ -1,0 +1,9 @@
+// Prefix header for react-native-udp-ios
+// This MUST be processed before any other headers
+
+// Disable folly coroutines - not available in React Native prebuilt dependencies
+// FOLLY_CFG_NO_COROUTINES must be defined BEFORE folly/Portability.h is included
+// to prevent auto-detection of C++20 coroutine support
+#ifndef FOLLY_CFG_NO_COROUTINES
+#define FOLLY_CFG_NO_COROUTINES 1
+#endif

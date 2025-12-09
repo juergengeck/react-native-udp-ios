@@ -20,11 +20,14 @@ Pod::Spec.new do |s|
   s.dependency "React-RCTNetwork"
   s.dependency "CocoaAsyncSocket", "~> 7.6"
   
+  # Match Expo's proven Folly configuration pattern exactly
+  # These flags MUST be applied to every source file BEFORE Folly headers are included
+  s.compiler_flags = '-DFOLLY_NO_CONFIG=1 -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DFOLLY_CFG_NO_COROUTINES=1 -DFOLLY_HAVE_CLOCK_GETTIME=1 -Wno-comma -Wno-shorten-64-to-32'
+
   s.pod_target_xcconfig = {
-    "CLANG_CXX_LANGUAGE_STANDARD" => "c++20",
+    "CLANG_CXX_LANGUAGE_STANDARD" => "c++17",
     "USE_HEADERMAP" => "YES",
-    "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/boost\" \"$(PODS_ROOT)/Headers/Public/React-bridging\" \"$(PODS_ROOT)/Headers/Public/ReactCommon\" \"$(PODS_ROOT)/Headers/Public/React-Codegen\"",
-    "OTHER_CPLUSPLUSFLAGS" => "-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -DRCT_NEW_ARCH_ENABLED=1"
+    "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/boost\" \"$(PODS_ROOT)/Headers/Public/React-bridging\" \"$(PODS_ROOT)/Headers/Public/ReactCommon\" \"$(PODS_ROOT)/Headers/Public/React-Codegen\""
   }
   
   # Add dependencies based on React Native version
