@@ -14,6 +14,7 @@ using namespace facebook::jsi;
 // Global weak references
 static void* g_socketManager = nullptr;
 static std::weak_ptr<CallInvoker> g_jsInvoker;
+static Runtime* g_runtime = nullptr;  // Store runtime pointer for async callbacks
 
 // MutableBuffer implementation for NSData
 class NSDataBuffer : public MutableBuffer {
@@ -36,10 +37,11 @@ private:
 
 void UDPDirectJSI::install(Runtime& runtime, void* socketManager, std::shared_ptr<CallInvoker> jsInvoker) {
     NSLog(@"[UDPDirectJSI] Installing JSI bindings with CallInvoker");
-    
+
     // Store references
     g_socketManager = socketManager;
     g_jsInvoker = jsInvoker;
+    g_runtime = &runtime;  // Store runtime pointer for async callbacks
     
     // Install udpSendDirect function
     auto udpSendDirectFunc = Function::createFromHostFunction(
@@ -148,11 +150,11 @@ Value UDPDirectJSI::udpSendDirect(
             throw JSError(runtime, "offset + length exceeds buffer size");
         }
         
-        // Create NSData with the specified range
+        // Create NSData with a COPY of the specified range
+        // IMPORTANT: We must copy because sendData dispatches async and the
+        // ArrayBuffer could be garbage collected before the send completes
         uint8_t* dataPtr = arrayBuffer.data(runtime) + offset;
-        NSData *data = [NSData dataWithBytesNoCopy:dataPtr
-                                             length:length
-                                       freeWhenDone:NO];
+        NSData *data = [NSData dataWithBytes:dataPtr length:length];
         
         // Extract port and address
         if (!arguments[4].isNumber()) {
@@ -369,27 +371,34 @@ Value UDPDirectJSI::setEventHandler(
                 }
                 
                 // Use the JS invoker to run on the JS thread
-                jsInvoker->invokeAsync([&runtime, messageHandler, socketIdStr, hostStr, portNum, mutableData]() {
+                // IMPORTANT: Use g_runtime (global pointer) instead of &runtime (dangling reference)
+                jsInvoker->invokeAsync([messageHandler, socketIdStr, hostStr, portNum, mutableData]() {
                     try {
+                        if (!g_runtime) {
+                            NSLog(@"[UDPDirectJSI] Runtime no longer available");
+                            return;
+                        }
+                        Runtime& rt = *g_runtime;
+
                         // Create a MutableBuffer that wraps NSData
                         auto buffer = std::make_shared<NSDataBuffer>(mutableData);
-                        
+
                         // Create ArrayBuffer from the MutableBuffer
-                        auto arrayBuffer = ArrayBuffer(runtime, buffer);
-                        
+                        auto arrayBuffer = ArrayBuffer(rt, buffer);
+
                         // Create event object
-                        auto event = Object(runtime);
-                        event.setProperty(runtime, "socketId", String::createFromUtf8(runtime, socketIdStr));
-                        event.setProperty(runtime, "data", std::move(arrayBuffer));
-                        event.setProperty(runtime, "address", String::createFromUtf8(runtime, hostStr));
-                        event.setProperty(runtime, "port", Value((double)portNum));
-                        
+                        auto event = Object(rt);
+                        event.setProperty(rt, "socketId", String::createFromUtf8(rt, socketIdStr));
+                        event.setProperty(rt, "data", std::move(arrayBuffer));
+                        event.setProperty(rt, "address", String::createFromUtf8(rt, hostStr));
+                        event.setProperty(rt, "port", Value((double)portNum));
+
                         // Call handler
-                        messageHandler->call(runtime, event);
-                        
-                        NSLog(@"[UDPDirectJSI] Zero-copy message delivered: %zu bytes from %s:%d", 
+                        messageHandler->call(rt, event);
+
+                        NSLog(@"[UDPDirectJSI] Zero-copy message delivered: %zu bytes from %s:%d",
                               mutableData.length, hostStr.c_str(), portNum);
-                              
+
                         // The buffer will be automatically released when the ArrayBuffer is GC'd
                     } catch (const std::exception& e) {
                         NSLog(@"[UDPDirectJSI] Error in message handler: %s", e.what());
@@ -400,23 +409,27 @@ Value UDPDirectJSI::setEventHandler(
         
         if (onError) {
             manager.onSendFailure = ^(NSNumber* sockId, long tag, NSError* error) {
-                auto event = Object(runtime);
-                event.setProperty(runtime, "socketId", String::createFromUtf8(runtime, [[sockId stringValue] UTF8String]));
-                event.setProperty(runtime, "error", String::createFromUtf8(runtime, [[error localizedDescription] UTF8String]));
-                
-                onError->call(runtime, event);
+                if (!g_runtime) return;
+                Runtime& rt = *g_runtime;
+                auto event = Object(rt);
+                event.setProperty(rt, "socketId", String::createFromUtf8(rt, [[sockId stringValue] UTF8String]));
+                event.setProperty(rt, "error", String::createFromUtf8(rt, [[error localizedDescription] UTF8String]));
+
+                onError->call(rt, event);
             };
         }
-        
+
         if (onClose) {
             manager.onSocketClosed = ^(NSNumber* sockId, NSError* _Nullable error) {
-                auto event = Object(runtime);
-                event.setProperty(runtime, "socketId", String::createFromUtf8(runtime, [[sockId stringValue] UTF8String]));
+                if (!g_runtime) return;
+                Runtime& rt = *g_runtime;
+                auto event = Object(rt);
+                event.setProperty(rt, "socketId", String::createFromUtf8(rt, [[sockId stringValue] UTF8String]));
                 if (error) {
-                    event.setProperty(runtime, "error", String::createFromUtf8(runtime, [[error localizedDescription] UTF8String]));
+                    event.setProperty(rt, "error", String::createFromUtf8(rt, [[error localizedDescription] UTF8String]));
                 }
-                
-                onClose->call(runtime, event);
+
+                onClose->call(rt, event);
             };
         }
         

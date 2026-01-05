@@ -2,7 +2,9 @@
   "compilerOptions": {
     "target": "esnext",
     "module": "commonjs",
-    "lib": ["esnext"],
+    "lib": [
+      "esnext"
+    ],
     "jsx": "react-native",
     "strict": false,
     "skipLibCheck": true,
@@ -13,6 +15,13 @@
     "declaration": true,
     "outDir": "lib"
   },
-  "include": ["src"],
-  "exclude": ["node_modules", "lib", "example"]
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "node_modules",
+    "lib",
+    "example"
+  ],
+  "extends": "expo/tsconfig.base"
 }

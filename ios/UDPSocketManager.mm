@@ -356,7 +356,7 @@ NSString * const UDPErrorDomain = @"com.lama.udpdirect.ErrorDomain";
 }
 
 - (void)sendData:(NSData *)data onSocket:(NSNumber *)socketId toHost:(NSString *)host port:(uint16_t)port tag:(long)tag {
-    // Perform a quick lookup synchronously so we don’t capture a nil socket
+    // Perform a quick lookup synchronously so we don't capture a nil socket
     GCDAsyncUdpSocket *udpSocket = _asyncSockets[socketId];
     if (!udpSocket) {
         UDP_SM_ERROR(@"Socket %@ not found for sending.", socketId);
@@ -370,6 +370,19 @@ NSString * const UDPErrorDomain = @"com.lama.udpdirect.ErrorDomain";
 
     // Use async queue for the real send to preserve ordering with delegate callbacks
     dispatch_async(_delegateQueue, ^{
+        // Ensure broadcast is enabled when sending to broadcast addresses
+        if ([host isEqualToString:@"255.255.255.255"] || [host hasSuffix:@".255"]) {
+            NSError *broadcastError = nil;
+            if (![udpSocket enableBroadcast:YES error:&broadcastError]) {
+                UDP_SM_ERROR(@"Socket %@: Failed to enable broadcast for send: %@", socketId, broadcastError.localizedDescription);
+                if (self.onSendFailure) {
+                    self.onSendFailure(socketId, tag, broadcastError);
+                }
+                return;
+            }
+            UDP_SM_LOG(@"Socket %@: Enabled broadcast for send to %@", socketId, host);
+        }
+
         UDP_SM_LOG(@"Socket %@: Sending %lu bytes to %@:%u with tag %ld", socketId, (unsigned long)data.length, host, port, tag);
         [udpSocket sendData:data toHost:host port:port withTimeout:-1 tag:tag];
     });
