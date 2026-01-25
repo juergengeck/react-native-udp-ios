@@ -87,6 +87,93 @@ RCT_EXPORT_MODULE()
     return std::static_pointer_cast<facebook::react::TurboModule>(_cppImpl);
 }
 
+#pragma mark - NativeUDPDirectModuleSpec protocol stubs
+// These are never called - the C++ TurboModule (UDPDirectModuleCxxImpl) handles
+// all JSI calls directly. But the protocol conformance requires these to exist.
+
+- (void)createSocket:(JS::NativeUDPDirectModule::UdpSocketOptionsSpec &)options
+             resolve:(RCTPromiseResolveBlock)resolve
+              reject:(RCTPromiseRejectBlock)reject {
+    reject(@"ERR_NOT_IMPL", @"Use JSI path", nil);
+}
+
+- (void)bind:(NSString *)socketId
+        port:(double)port
+     address:(NSString *)address
+     resolve:(RCTPromiseResolveBlock)resolve
+      reject:(RCTPromiseRejectBlock)reject {
+    reject(@"ERR_NOT_IMPL", @"Use JSI path", nil);
+}
+
+- (void)close:(NSString *)socketId
+      resolve:(RCTPromiseResolveBlock)resolve
+       reject:(RCTPromiseRejectBlock)reject {
+    reject(@"ERR_NOT_IMPL", @"Use JSI path", nil);
+}
+
+- (void)closeAllSockets:(RCTPromiseResolveBlock)resolve
+                 reject:(RCTPromiseRejectBlock)reject {
+    reject(@"ERR_NOT_IMPL", @"Use JSI path", nil);
+}
+
+- (void)send:(NSString *)socketId
+  base64Data:(NSString *)base64Data
+        port:(double)port
+     address:(NSString *)address
+     options:(JS::NativeUDPDirectModule::SendOptionsSpec &)options
+     resolve:(RCTPromiseResolveBlock)resolve
+      reject:(RCTPromiseRejectBlock)reject {
+    reject(@"ERR_NOT_IMPL", @"Use JSI path", nil);
+}
+
+- (NSArray<NSString *> *)getLocalIPAddresses {
+    return @[];
+}
+
+- (void)address:(NSString *)socketId
+        resolve:(RCTPromiseResolveBlock)resolve
+         reject:(RCTPromiseRejectBlock)reject {
+    reject(@"ERR_NOT_IMPL", @"Use JSI path", nil);
+}
+
+- (void)setBroadcast:(NSString *)socketId
+                flag:(BOOL)flag
+             resolve:(RCTPromiseResolveBlock)resolve
+              reject:(RCTPromiseRejectBlock)reject {
+    reject(@"ERR_NOT_IMPL", @"Use JSI path", nil);
+}
+
+- (void)setDataEventHandler:(NSString *)socketId
+                    resolve:(RCTPromiseResolveBlock)resolve
+                     reject:(RCTPromiseRejectBlock)reject {
+    reject(@"ERR_NOT_IMPL", @"Use JSI path", nil);
+}
+
+- (void)forciblyReleasePort:(double)port
+                    resolve:(RCTPromiseResolveBlock)resolve
+                     reject:(RCTPromiseRejectBlock)reject {
+    reject(@"ERR_NOT_IMPL", @"Use JSI path", nil);
+}
+
+- (void)addListener:(NSString *)eventName {
+    // No-op - events handled via JSI
+}
+
+- (void)removeListeners:(double)count {
+    // No-op - events handled via JSI
+}
+
+- (facebook::react::ModuleConstants<JS::NativeUDPDirectModule::Constants::Builder>)constantsToExport {
+    return [self getConstants];
+}
+
+- (facebook::react::ModuleConstants<JS::NativeUDPDirectModule::Constants::Builder>)getConstants {
+    return facebook::react::typedConstants<JS::NativeUDPDirectModule::Constants::Builder>({
+        .VERSION = @"1.0.0",
+        .TURBO_ENABLED = true
+    });
+}
+
 #pragma mark - Cleanup
 
 - (void)invalidate {
