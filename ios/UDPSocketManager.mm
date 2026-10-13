@@ -20,6 +20,8 @@
 
 // Define Buffer Status Constants (internal to this manager)
 static NSNumber * const kUDPBufferStatusReleased = @0;
+// Marks a delegate queue with its own identity, so code can tell whether it already runs on it.
+static char kUDPSocketManagerQueueKey;
 static NSNumber * const kUDPBufferStatusInUseByJS = @1;      // JS has a HostObject pointing to it (for created buffers)
 static NSNumber * const kUDPBufferStatusReadyForJSAccess = @2; // Received data, ready for JS to pick up via HostObject
 static NSNumber * const kUDPBufferStatusNativeOnly = @3;     // (Potentially for future use if native needs its own buffers)
@@ -74,6 +76,7 @@ NSString * const UDPErrorDomain = @"com.lama.udpdirect.ErrorDomain";
             _delegateQueue = dispatch_queue_create("com.lama.UDPSocketManagerQueue", DISPATCH_QUEUE_SERIAL);
             UDP_SM_LOG(@"Warning: No delegate queue provided, created a default one.");
         }
+        dispatch_queue_set_specific(_delegateQueue, &kUDPSocketManagerQueueKey, (__bridge void *)_delegateQueue, NULL);
 
         _asyncSockets = [NSMutableDictionary dictionary];
         _socketStatus = [NSMutableDictionary dictionary];
@@ -981,8 +984,10 @@ withFilterContext:(nullable id)filterContext {
 
 - (void)dealloc {
     UDP_SM_LOG(@"Dealloc starting cleanup...");
-    // Ensure cleanup happens on the delegate queue to avoid race conditions with ongoing operations
-    dispatch_sync(_delegateQueue, ^{
+    // Cleanup runs on the delegate queue to avoid races with ongoing operations. The last
+    // reference is often dropped by a block running on that very queue (module teardown on
+    // reload), where dispatch_sync would deadlock: run inline there.
+    dispatch_block_t cleanup = ^{
         for (NSNumber *socketId in [self->_asyncSockets allKeys]) {
             GCDAsyncUdpSocket *udpSocket = self->_asyncSockets[socketId];
             if (udpSocket) {
@@ -996,7 +1001,12 @@ withFilterContext:(nullable id)filterContext {
         
         [self->_buffers removeAllObjects];
         [self->_bufferStatus removeAllObjects];
-    });
+    };
+    if (dispatch_get_specific(&kUDPSocketManagerQueueKey) == (__bridge void *)_delegateQueue) {
+        cleanup();
+    } else {
+        dispatch_sync(_delegateQueue, cleanup);
+    }
     UDP_SM_LOG(@"Dealloc - cleaned up resources.");
 }
 
