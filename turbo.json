@@ -1,0 +1,17 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "outputs": [
+        "lib/**"
+      ]
+    },
+    "typecheck": {
+      "outputs": []
+    },
+    "test": {
+      "cache": false,
+      "outputs": []
+    }
+  }
+}
