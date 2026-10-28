@@ -13,5 +13,6 @@ pnpm typecheck
 Bob still produces CommonJS, ESM and TypeScript declarations. The native module
 identity, podspec name and public package entry paths are unchanged. File consumers
 install the library directory after its owner build, rather than this tooling root.
-The declared Jest command currently has no test cases and exits unsuccessfully;
-this migration does not claim test or device coverage.
+No automated behavior suite is currently supplied. Portable qualification is
+limited to build, TypeScript and packed native-payload checks; it makes no
+device or live-UDP claim.

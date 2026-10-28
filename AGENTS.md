@@ -16,9 +16,10 @@ refresh remain explicit owner preparation stages. Do not borrow enclosing app
 workspace dependencies or expose partial output after failed preparation.
 
 The native compiler options and Bob targets are unchanged. Verify a normal packed
-consumer's public declarations and packaged native files. Jest currently has no
-test cases. Report that honestly without inventing a passing suite. Portable
-builds do not qualify an iOS/Android host or live UDP traffic. Hold successful
+consumer's public declarations and packaged native files. No automated behavior
+suite is currently supplied. Portable qualification is limited to build,
+TypeScript and packed native-payload checks; it does not qualify an iOS/Android
+host or live UDP traffic. Hold successful
 outputs stable while downstream owners refresh file packages.
 
 ## Sources consumers

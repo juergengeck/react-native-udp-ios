@@ -193,6 +193,10 @@ All socket operations are performed on a dedicated serial queue:
 
 ## Contributing
 
+No automated behavior suite is currently supplied. Portable qualification is
+limited to build, TypeScript and packed native-payload checks; it makes no
+device or live-UDP claim.
+
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
 
 ## License

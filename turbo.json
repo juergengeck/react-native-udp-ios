@@ -8,10 +8,6 @@
     },
     "typecheck": {
       "outputs": []
-    },
-    "test": {
-      "cache": false,
-      "outputs": []
     }
   }
 }
