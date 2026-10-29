@@ -22,6 +22,5 @@
     "node_modules",
     "lib",
     "example"
-  ],
-  "extends": "expo/tsconfig.base"
+  ]
 }

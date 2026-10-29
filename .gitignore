@@ -70,3 +70,6 @@ lib/
 example/ios/Pods
 example/android/build
 example/node_modules
+# Owning task cache and package archives
+.turbo/
+*.tgz
